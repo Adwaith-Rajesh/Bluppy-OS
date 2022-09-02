@@ -1,0 +1,10 @@
+{
+	"build_choices": ["all", "floppy", "bootloader", "clean", "qemu"],
+	"make_commands": {
+		"all": "make",
+		"floppy": "make floppy",
+		"bootloader": "make bootloader",
+		"clean": "make clean",
+		"qemu": "make qemu"
+	}
+}
