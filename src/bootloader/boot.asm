@@ -89,6 +89,40 @@ puts:
     pop si
     ret
 
+;
+; Disk subroutines
+; params:
+;  - ax - LBA address
+; returns
+;  - cx [0-5 bits] - sector
+;  - cx [6-15 bits] - cylinder
+;  - dh - head
+
+
+lba_to_chs:
+
+    push ax
+    push dx
+
+    xor dx, dx                              ; dx = 0
+    div word [bpb_sectors_per_track]        ; ax = LBA / sectors_per_track
+                                            ; dx = LBA % sectors_per_track
+    inc dx                                  ; dx = (LBA % sectors_per_track) + 1
+    mov cx, dx                              ; cx = sectors
+
+    xor dx, dx                              ; dx = 0
+    div word [bpb_heads]                    ; ax = (LBA / sectors_per_track) / heads
+                                            ; dx = (LBA / sectors_per_track) % heads
+    mov dh, dl                              ; dh = head
+    mov ch, al                              ; ch = cylinder (lower 8 bits)
+    shl ah, 6
+    or cl, ah                               ; put the upper two bits of cylinder in cl
+
+    pop ax
+    mov dl, al                              ; restore dl
+    pop ax
+
+    ret
 
 hello:          db "Hello, World!", ENDL, 0
 
