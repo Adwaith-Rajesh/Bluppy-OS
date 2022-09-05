@@ -61,7 +61,7 @@ main:
     cli                 ; clear all interrupt, so that cpu remain halted
     hlt
 
-;
+; puts
 ; prints a string to the terminal
 ; params:
 ;   - ds:si -> pointer to the string
@@ -89,15 +89,17 @@ puts:
     pop si
     ret
 
-;
-; Disk subroutines
-; params:
+
+; ####### Disk subroutines #########
+
+
+; lba_to_chs
+;   params:
 ;  - ax - LBA address
 ; returns
 ;  - cx [0-5 bits] - sector
 ;  - cx [6-15 bits] - cylinder
 ;  - dh - head
-
 
 lba_to_chs:
 
@@ -123,6 +125,18 @@ lba_to_chs:
     pop ax
 
     ret
+
+
+; disk_read
+; read n sectors from the disk
+; params
+;   - ax - lba
+;   - cl - number of sectors to read (128 max)
+;   - dl - drive number
+;   - es:bx - memory location to store the data
+
+
+
 
 hello:          db "Hello, World!", ENDL, 0
 
