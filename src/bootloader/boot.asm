@@ -15,7 +15,7 @@ nop
 
 bpb_oem_identifier:             db 'MSWIN4.1'       ; 8 bits
 bpb_bytes_per_sector:           dw 512
-bpb_sectos_per_cluster:         db 1
+bpb_sectors_per_cluster:        db 1
 bpb_reserved_sectors:           dw 2
 bpb_fat_count:                  db 2
 bpb_dir_entries_count:          dw 0E0h
@@ -36,7 +36,7 @@ ebr_drive_number:               db 0                    ; 0x00 for a floppy disk
                                 db 0                    ; reserve bit
 ebr_signature:                  db 29h
 ebr_volume_id:                  db 12h, 34h, 56h, 78h   ; 4 bytes serial number, can be anything
-ebr_voulme_label:               db 'BLUPPY   OS'        ; 11 bytes padded with spaces
+ebr_volume_label:               db 'BLUPPY   OS'        ; 11 bytes padded with spaces
 ebr_system_id:                  db 'FAT12   '           ; 8 bytes padded with space
 
 
@@ -77,7 +77,7 @@ puts:
     or al, al       ; jz is set if al = 0
     jz .done
 
-    mov ah, 0x0E    ; tty interupt
+    mov ah, 0x0E    ; tty interrupt
     mov bh, 0       ; set the page number to 0
     int 0x10        ; call the video interrupt
 
