@@ -27,6 +27,10 @@ $(BUILD_DIR)/kernel.bin: $(SRC_DIR)/kernel/main.asm always
 qemu:
 	qemu-system-x86_64 -fda build/main_floppy.img
 
+.PHONY: bochs
+bochs:
+	bochs -f bochs_config
+
 always:
 	mkdir -p $(BUILD_DIR)
 
