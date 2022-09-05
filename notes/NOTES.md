@@ -34,6 +34,31 @@ cylinder    = (LBA / sectors_per_track) / heads_per_cylinder
   sector:                  453212
   ```
 
+- routine `disk_read`
+  params
+  - ax - lba
+  - cl - number of sectors to read (128 max)
+  - dl - drive number
+  - es:bx - memory location to store the data
+
+## Reading from the disk
+
+- INT 13,2
+
+ah = 02
+al = number of sectors to read
+ch = cylinder
+cl = sector number
+dh = head number
+dl = drive number (0 = A:, 1 = 2nd Floppy, 80h = drive 0, 81h = drive 1)
+es:bx = pointer to buffer
+
+returns:
+ah = status
+al = number of sectors read
+cf = 0 if successful
+= 1 if error
+
 ## FAT file system
 
 - https://wiki.osdev.org/FAT

@@ -54,11 +54,34 @@ main:
     mov ss, ax
     mov sp, 0x7C00      ; set the stack pointer to the start of OS
 
+    ; lets read smthng
+    ; BIOS should set dl to the drive number
+    mov [ebr_drive_number], dl
+    mov ax, 1           ; lba = 1
+    mov cl, 1           ; sectors = 1
+    mov bx, 0x7E00      ; data should be after the bootloader
+    call disk_read
+
     ; print hello world
     mov si, hello
     call puts
 
     cli                 ; clear all interrupt, so that cpu remain halted
+    hlt
+
+; ####### ERRORS #######
+floppy_error:
+    mov si, msg_read_failed
+    call puts
+    call reboot_after_key_press
+
+reboot_after_key_press:
+    mov ah, 0
+    int 16h             ; wait for a key press
+    jmp 0FFFFh:0        ; jmp to the beginning of the BIOS, reboot prolly
+
+.halt:
+    cli
     hlt
 
 ; puts
@@ -90,7 +113,7 @@ puts:
     ret
 
 
-; ####### Disk subroutines #########
+; ####### Disk subroutines #######
 
 
 ; lba_to_chs
@@ -135,10 +158,69 @@ lba_to_chs:
 ;   - dl - drive number
 ;   - es:bx - memory location to store the data
 
+disk_read:
+
+    push ax             ; save all the registers, we modify
+    push bx
+    push cx
+    push dx
+    push di
+
+    push cx             ; store cl, lba_to_chs modifies it.
+    call lba_to_chs
+    pop ax              ; al = number of sectors to read
+
+    mov ah, 02h
+
+    mov di, 3           ; retry count, floppy disk's in the real world are
+                        ; freakin' unreliable
+.retry:
+    pusha               ; save all the register, WDK what register the BIOS will modify
+    stc                 ; some BIOS are shit and won't set it
+    int 13h             ; cf = 0 on success
+
+    jnc .done
+
+    ; OOPS failed
+    popa
+    call disk_reset
+
+    dec di
+    test di, di         ; check di = 0
+    jnz .retry
+
+.fail:
+    jmp floppy_error
+
+.done:
+    popa
+
+    pop di              ; restore all the registers
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+
+
+; disk_reset
+; reset the disk controller
+; params:
+;   - dl: drive number
+disk_reset:
+    pusha
+    mov ah, 0
+    stc                 ; same reason as mentioned above
+    int 13h
+
+    jc floppy_error
+    popa
+    ret
 
 
 
-hello:          db "Hello, World!", ENDL, 0
+hello:              db "Hello, World!", ENDL, 0
+msg_read_failed:    db "Disk read failed", ENDL, 0
 
 times 510 - ($ - $$) db 0       ; fill the rest with zeros
 dw 0xAA55                       ; magic bootloader number
